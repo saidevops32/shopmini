@@ -1,0 +1,24 @@
+# secrets and local config
+env.sh
+.env
+*.env
+*.secret
+*.pem
+*.key
+*.pfx
+kubeconfig
+.kube/
+# terraform / bicep state
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfvars
+# build output
+node_modules/
+target/
+build/
+dist/
+.dart_tool/
+*.log
+.idea/
+.vscode/
