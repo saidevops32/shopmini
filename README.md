@@ -65,3 +65,14 @@ Firewall: only the AKS outbound IP may reach the databases:
 Node size: Standard_D2s_v4 x1 (B-series is not available on this subscription).
 Cost control: `az aks stop -g $RG -n $AKS` after every session; after
 `az aks start`, rerun the firewall sync script (the outbound IP can change).
+
+OIDC subject format: this repo uses immutable subjects, so GitHub presents
+`repo:OWNER@OWNERID/REPO@REPOID:...` (numeric IDs, safe against rename/transfer
+attacks). Federated credentials must use that exact form (`AADSTS700213` = no match).
+Check: `gh api repos/OWNER/REPO/actions/oidc/customization/sub`
+Real subject from a failed job: `gh run view <id> --log-failed | grep subject`.
+New credentials can take a few minutes to replicate in Entra ID; rerun before debugging.
+The prod credential follows the same pattern (to be confirmed on the first prod deploy).
+
+CI hygiene: Dependabot (.github/dependabot.yml) bumps pinned Action SHAs weekly.
+Pipelines should pin `runs-on: ubuntu-24.04` rather than `ubuntu-latest`.
