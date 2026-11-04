@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kv-test
+  namespace: shopmini
+  labels:
+    azure.workload.identity/use: "true"
+spec:
+  serviceAccountName: shopmini-sa
+  containers:
+    - name: test
+      image: busybox:1.36
+      command: ["sh", "-c", "for f in /mnt/secrets/*; do echo \"$f length=$(wc -c < $f)\"; done; sleep 3600"]
+      volumeMounts:
+        - name: kv
+          mountPath: /mnt/secrets
+          readOnly: true
+  volumes:
+    - name: kv
+      csi:
+        driver: secrets-store.csi.k8s.io
+        readOnly: true
+        volumeAttributes:
+          secretProviderClass: shopmini-kv

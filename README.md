@@ -76,3 +76,16 @@ The prod credential follows the same pattern (to be confirmed on the first prod 
 
 CI hygiene: Dependabot (.github/dependabot.yml) bumps pinned Action SHAs weekly.
 Pipelines should pin `runs-on: ubuntu-24.04` rather than `ubuntu-latest`.
+
+## Phase 3: Key Vault via workload identity
+- User-assigned identity `id-shopmini-app`, role `Key Vault Secrets User` on the vault.
+- Federated to ServiceAccount `shopmini/shopmini-sa` (subject
+  `system:serviceaccount:shopmini:shopmini-sa`).
+- `SecretProviderClass shopmini-kv` mounts `mysql-password` and `postgres-password`
+  as files. Pods need label `azure.workload.identity/use: "true"` and
+  `serviceAccountName: shopmini-sa`.
+- Manifests hold placeholders only. Apply with `./scripts/apply-k8s.sh <files>`:
+  it substitutes ONLY a fixed list of variables (plain `envsubst` blanks every `$x`,
+  which broke our test pod's shell script).
+- Proof: `kv-test` printed secret lengths (27) only; a pod using the `default`
+  service account fails to mount (`kv-denied`).

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shopmini
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: shopmini-sa
+  namespace: shopmini
+  annotations:
+    azure.workload.identity/client-id: "${APP_MI_CLIENT_ID}"
