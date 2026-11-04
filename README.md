@@ -35,3 +35,33 @@ mobile/ web/ services/ k8s/ infra/ argocd/ scripts/ docs/ .github/workflows/
 
 ### If a secret is ever pushed
 Rotate the secret FIRST (deleting the commit does not make it safe), then clean history.
+
+## Phase 1: Core Azure resources (southindia)
+Why southindia: PostgreSQL Burstable B1ms returned `SkuNotAvailable` in
+centralindia for this subscription, so databases and AKS live in southindia.
+Key Vault stays in centralindia (purge protection prevents recreating it).
+
+Order: resource group -> Key Vault -> DB passwords into Key Vault ->
+PostgreSQL -> MySQL -> ACR -> AKS -> attach ACR -> firewall rules -> test.
+
+CLI gotchas (these differ between PostgreSQL and MySQL):
+| | PostgreSQL | MySQL |
+|---|---|---|
+| server flag | `-s` | `-n` |
+| db create | `db create -s SERVER -n DB` | `db create -s SERVER -d DB` |
+| firewall create | `-s SERVER -n RULE` | `-n SERVER -r RULE` |
+- PostgreSQL: `--high-availability` is gone, use `--zonal-resiliency Disabled`.
+- PostgreSQL created with `--public-access None` ends up with public access
+  Disabled; run `az postgres flexible-server update --public-access Enabled`.
+  With no firewall rules nobody can connect until one is added.
+- `az aks create` rejects `--no-wait` together with `--attach-acr`: create the
+  cluster with `--no-wait`, then `az aks update --attach-acr $ACR`.
+- `NODE_RG` in env.sh must come AFTER `LOCATION` and `AKS`.
+
+Firewall: only the AKS outbound IP may reach the databases:
+
+    source env.sh && ./scripts/sync-db-firewall.sh
+
+Node size: Standard_D2s_v4 x1 (B-series is not available on this subscription).
+Cost control: `az aks stop -g $RG -n $AKS` after every session; after
+`az aks start`, rerun the firewall sync script (the outbound IP can change).
