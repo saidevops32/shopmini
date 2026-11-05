@@ -108,10 +108,21 @@ Never name a variable GH_REPO (the gh CLI reads it); we use REPO_NAME.
 - Graceful shutdown on SIGTERM. Known gaps: no login rate limiting, no migrations.
 - Dockerfile: two stages, base image pinned by digest (`./scripts/get-digest.sh node 22-alpine`),
   non-root uid 1000, `npm ci --omit=dev`, `.dockerignore`.
-- Build: `az acr build -r $ACR -t auth-service:0.1.0 services/auth-service`.
+- Build: `az acr build -r $ACR -t auth-service:0.1.1 services/auth-service`.
 
 Boot 4 changes we made: starter `spring-boot-starter-web` -> `spring-boot-starter-webmvc`,
 test starter -> `spring-boot-starter-webmvc-test`, `@WebMvcTest` now in
 `org.springframework.boot.webmvc.test.autoconfigure`. Found by Trivy before the first
 deploy: 13 HIGH/CRITICAL findings on Boot 3.5; fixed by upgrading, not by pinning libraries.
 Local tests in Cloud Shell: `mvn -B clean test -Djava.version=17` (the image builds with Java 21).
+
+Image-scan lesson: `trivy fs` on the lockfile was clean, but `trivy image` found 10 HIGH
+findings in npm's own bundled packages inside the node base image. The runtime stage now
+deletes npm/npx/corepack/yarn (the service only runs `node`). Scan images, not just lockfiles.
+
+Catalogue image: jar scan clean after the Boot 4.1 upgrade; 3 HIGH `libexpat` findings came
+from the Alpine layer of the base image. Fix = newer base digest (Dependabot opens a PR when
+one exists), or the temporary `apk upgrade --no-cache libexpat` line in the Dockerfile.
+TODO: remove that line once `trivy image` is clean without it.
+Maven Central rate-limits an IP with 429 after many back-to-back mvn/trivy runs (30 min block).
+Don't loop them; cache `~/.m2` in CI.

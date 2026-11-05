@@ -11,6 +11,8 @@ FROM eclipse-temurin:21-jre-alpine@sha256:82cf3d9ccbe1ed46252008d51b2f2329e6b9e8
 LABEL org.opencontainers.image.source="https://github.com/saidevops32/shopmini" \
       org.opencontainers.image.title="catalogue-service" \
       org.opencontainers.image.licenses="MIT"
+# stopgap: patch libexpat until the base image is rebuilt; remove once trivy image is clean without it
+RUN apk upgrade --no-cache libexpat
 RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app
 WORKDIR /app
 COPY --from=build --chown=10001:10001 /build/target/catalogue-service.jar app.jar
