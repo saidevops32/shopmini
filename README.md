@@ -89,3 +89,13 @@ Pipelines should pin `runs-on: ubuntu-24.04` rather than `ubuntu-latest`.
   which broke our test pod's shell script).
 - Proof: `kv-test` printed secret lengths (27) only; a pod using the `default`
   service account fails to mount (`kv-denied`).
+
+## Recovery after Cloud Shell reset
+1. `gh auth login -h github.com -p https -w -s workflow` then `gh auth setup-git`
+2. `git clone https://github.com/<USER>/shopmini.git && cd shopmini`
+3. Recreate `env.sh` from `env.sh.example` (replace SUFFIX and YOUR_GITHUB_USER,
+   then add GHA_APP_ID, APP_MI_CLIENT_ID, TENANT_ID). Put derived values last.
+4. Reinstall gitleaks into `~/bin`.
+5. `source env.sh`, `az aks get-credentials -g $RG -n $AKS --overwrite-existing`.
+6. `source scripts/load-db-secrets.sh` when DB passwords are needed.
+Never name a variable GH_REPO (the gh CLI reads it); we use REPO_NAME.
