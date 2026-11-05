@@ -99,3 +99,13 @@ Pipelines should pin `runs-on: ubuntu-24.04` rather than `ubuntu-latest`.
 5. `source env.sh`, `az aks get-credentials -g $RG -n $AKS --overwrite-existing`.
 6. `source scripts/load-db-secrets.sh` when DB passwords are needed.
 Never name a variable GH_REPO (the gh CLI reads it); we use REPO_NAME.
+
+## Phase 4a: auth-service (Node, PostgreSQL authdb)
+- Endpoints: `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`.
+- Probes: `/health/live` (process only, never the DB) and `/health/ready` (schema + DB).
+- Secrets read from `/mnt/secrets/{postgres-password,jwt-secret}` (Key Vault CSI);
+  env vars only as a local fallback. `jwt-secret` lives in Key Vault.
+- Graceful shutdown on SIGTERM. Known gaps: no login rate limiting, no migrations.
+- Dockerfile: two stages, base image pinned by digest (`./scripts/get-digest.sh node 22-alpine`),
+  non-root uid 1000, `npm ci --omit=dev`, `.dockerignore`.
+- Build: `az acr build -r $ACR -t auth-service:0.1.0 services/auth-service`.
