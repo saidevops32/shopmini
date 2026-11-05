@@ -109,3 +109,9 @@ Never name a variable GH_REPO (the gh CLI reads it); we use REPO_NAME.
 - Dockerfile: two stages, base image pinned by digest (`./scripts/get-digest.sh node 22-alpine`),
   non-root uid 1000, `npm ci --omit=dev`, `.dockerignore`.
 - Build: `az acr build -r $ACR -t auth-service:0.1.0 services/auth-service`.
+
+Boot 4 changes we made: starter `spring-boot-starter-web` -> `spring-boot-starter-webmvc`,
+test starter -> `spring-boot-starter-webmvc-test`, `@WebMvcTest` now in
+`org.springframework.boot.webmvc.test.autoconfigure`. Found by Trivy before the first
+deploy: 13 HIGH/CRITICAL findings on Boot 3.5; fixed by upgrading, not by pinning libraries.
+Local tests in Cloud Shell: `mvn -B clean test -Djava.version=17` (the image builds with Java 21).
