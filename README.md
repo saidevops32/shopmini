@@ -143,3 +143,17 @@ Don't loop them; cache `~/.m2` in CI.
 - Known gaps: no stock reservation, no idempotency key, `sslmode=require` (no cert check).
 - Local tests: `mvn -B clean test -Djava.version=17`. Image: `checkout-service:0.1.0`.
 - Lesson: commit work in progress before long builds; Cloud Shell can reset at any time.
+
+## Phase 4d: notification-worker (Node, RabbitMQ consumer)
+- Consumes `order.created` from queue `notification.order-created` (exchange `shop.events`,
+  topic, durable). Declares the same exchange and queue as checkout-service, so start order
+  does not matter. "Sends" a confirmation by logging one JSON line.
+- Delivery is at-least-once: recent order ids are remembered in memory and repeats skipped
+  (the memory resets on restart; a real email sender would need a database).
+- Malformed messages are logged and dropped. Gap: no dead-letter queue (needs matching
+  queue arguments on the checkout side too).
+- Health on :3001: `/health/live` (process only), `/health/ready` (connected and consuming).
+- Reconnects with backoff; graceful shutdown on SIGTERM.
+- Secret from `/mnt/secrets/rabbitmq-password` (Key Vault). `amqplib` pinned to 2.2.1
+  (2.0 only changed `heartbeat: 0`; Node 18+ required).
+- Image `notification-worker:0.1.0`; Dockerfile mirrors auth-service (digest pin, npm removed).

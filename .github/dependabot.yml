@@ -22,3 +22,11 @@ updates:
     directory: "/services/checkout-service"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/services/notification-worker"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/services/notification-worker"
+    schedule:
+      interval: "weekly"
