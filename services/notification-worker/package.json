@@ -1,0 +1,13 @@
+{
+  "name": "notification-worker",
+  "version": "0.1.0",
+  "private": true,
+  "main": "src/worker.js",
+  "scripts": {
+    "start": "node src/worker.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "amqplib": "2.2.1"
+  }
+}
