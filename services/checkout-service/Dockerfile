@@ -7,7 +7,7 @@ COPY src ./src
 RUN mvn -B -q package -DskipTests
 
 # ---- stage 2: JRE only, non-root, no Maven, no JDK ----
-FROM eclipse-temurin:21-jre-alpine@sha256:82cf3d9ccbe1ed46252008d51b2f2329e6b9e8a2f4394c4bebefc3ea7f4b1372
+FROM eclipse-temurin:24-jre-alpine@sha256:4044b6c87cb088885bcd0220f7dc7a8a4aab76577605fa471945d2e98270741f
 LABEL org.opencontainers.image.source="https://github.com/saidevops32/shopmini" \
       org.opencontainers.image.title="checkout-service" \
       org.opencontainers.image.licenses="MIT"
