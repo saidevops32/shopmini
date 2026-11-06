@@ -14,3 +14,11 @@ updates:
     directory: "/services/auth-service"
     schedule:
       interval: "weekly"
+  - package-ecosystem: "maven"
+    directory: "/services/checkout-service"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "docker"
+    directory: "/services/checkout-service"
+    schedule:
+      interval: "weekly"

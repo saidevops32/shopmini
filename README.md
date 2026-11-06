@@ -126,3 +126,20 @@ one exists), or the temporary `apk upgrade --no-cache libexpat` line in the Dock
 TODO: remove that line once `trivy image` is clean without it.
 Maven Central rate-limits an IP with 429 after many back-to-back mvn/trivy runs (30 min block).
 Don't loop them; cache `~/.m2` in CI.
+
+## Phase 4c: checkout-service (Spring Boot 4.1, PostgreSQL orderdb, RabbitMQ)
+- `POST /api/checkout/orders` (JWT from auth-service; prices come from catalogue-service,
+  never from the client) and `GET /api/checkout/orders/{id}` (owner only; others get 404).
+- Transactional outbox: the order and an `outbox` row commit together; `OutboxPublisher`
+  sends rows to exchange `shop.events` (key `order.created`) and waits for the broker's
+  confirm before marking them sent. RabbitMQ down = orders still work, messages wait.
+- Delivery is at-least-once, so consumers must tolerate duplicates.
+- Readiness checks the database only; liveness never checks anything external.
+- Secrets from `/mnt/secrets`: `postgres-password`, `jwt-secret`, `rabbitmq-password`.
+- Pinned versions: `nimbus-jose-jwt` 10.10 (not managed by Boot 4.1) and
+  `rabbit-amqp-client.version` 5.37.0 (Boot's default 5.30.0 had 4 HIGH CVEs; fixed from 5.34.0).
+  Remove the amqp override once Boot's own version is clean. Dependabot proposes bumps.
+- Entity is `ShopOrder` (table `orders`) because ORDER is reserved in JPQL.
+- Known gaps: no stock reservation, no idempotency key, `sslmode=require` (no cert check).
+- Local tests: `mvn -B clean test -Djava.version=17`. Image: `checkout-service:0.1.0`.
+- Lesson: commit work in progress before long builds; Cloud Shell can reset at any time.
