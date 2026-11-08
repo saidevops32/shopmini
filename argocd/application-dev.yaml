@@ -1,0 +1,16 @@
+# DRAFT: needs the placeholder problem solved first (see argocd/README.md).
+# Sync is manual until that works; switch to automated sync only after a clean manual sync.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: shopmini-dev
+  namespace: argocd
+spec:
+  project: shopmini
+  source:
+    repoURL: https://github.com/saidevops32/shopmini.git
+    targetRevision: main
+    path: k8s/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: shopmini

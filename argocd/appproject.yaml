@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: shopmini
+  namespace: argocd
+spec:
+  description: ShopMini workloads
+  sourceRepos:
+    - https://github.com/saidevops32/shopmini.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: shopmini
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
