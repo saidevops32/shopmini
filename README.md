@@ -157,3 +157,17 @@ Don't loop them; cache `~/.m2` in CI.
 - Secret from `/mnt/secrets/rabbitmq-password` (Key Vault). `amqplib` pinned to 2.2.1
   (2.0 only changed `heartbeat: 0`; Node 18+ required).
 - Image `notification-worker:0.1.0`; Dockerfile mirrors auth-service (digest pin, npm removed).
+
+## Phase 5a: Kubernetes manifests (kustomize)
+- `k8s/base`: namespace (Pod Security `restricted`), 5 service accounts, 5 SecretProviderClasses,
+  RabbitMQ, auth, catalogue, checkout, notification-worker. `k8s/overlays/dev` sets image names and tags.
+- Least privilege: one managed identity per service (`scripts/setup-identities.sh`), each allowed to read
+  only its own Key Vault secrets and trusted only for its own service account.
+- Placeholders (`${ACR}`, `${PG_HOST}`, client IDs) are filled at deploy time by `scripts/render-k8s.sh`.
+  Never commit rendered output.
+- Every pod: non-root, seccomp RuntimeDefault, no privilege escalation, drop ALL capabilities, read-only
+  root filesystem, startup/readiness/liveness probes, graceful shutdown, resource limits.
+- NOT applied to a cluster yet (Phase 5b).
+
+## Status and next steps
+See `docs/STATUS.md`. `scripts/teardown.sh` deletes all Azure resources (the repo is untouched).
