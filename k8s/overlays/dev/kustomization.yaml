@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+images:
+  - name: auth-service
+    newName: ${ACR}.azurecr.io/auth-service
+    newTag: "0.1.1"
+  - name: catalogue-service
+    newName: ${ACR}.azurecr.io/catalogue-service
+    newTag: "0.1.2"
+  - name: checkout-service
+    newName: ${ACR}.azurecr.io/checkout-service
+    newTag: "0.1.0"
+  - name: notification-worker
+    newName: ${ACR}.azurecr.io/notification-worker
+    newTag: "0.1.0"
+  - name: rabbitmq
+    newName: ${ACR}.azurecr.io/rabbitmq
+    newTag: "4-alpine"
