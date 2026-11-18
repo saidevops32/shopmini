@@ -8,6 +8,6 @@
     "test": "node --test"
   },
   "dependencies": {
-    "amqplib": "2.2.1"
+    "amqplib": "2.3.1"
   }
 }
